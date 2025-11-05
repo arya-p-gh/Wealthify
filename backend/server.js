@@ -10,6 +10,7 @@ const app = express();
 // CORS: allow local dev and configured client origin (for Vercel)
 const allowedOrigins = [
   'http://localhost:3000',
+  'http://localhost:3001',
   process.env.CLIENT_ORIGIN, // e.g. https://your-frontend.vercel.app
 ].filter(Boolean);
 
@@ -18,6 +19,17 @@ app.use(
     origin: (origin, callback) => {
       // Allow requests with no origin like mobile apps or curl
       if (!origin) return callback(null, true);
+      
+      // Allow any localhost in development
+      if (process.env.NODE_ENV !== 'production' && origin && origin.includes('localhost')) {
+        return callback(null, true);
+      }
+      
+      // Allow Render preview/dashboard origins (they use .onrender.com)
+      if (origin && origin.includes('.onrender.com')) {
+        return callback(null, true);
+      }
+      
       if (allowedOrigins.includes(origin)) return callback(null, true);
       return callback(new Error('Not allowed by CORS'));
     },
