@@ -23,7 +23,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>💰 Wealthify</h1>
+        <h1>Wealthify</h1>
         <p>Stock Management & Analysis Platform</p>
       </header>
 
