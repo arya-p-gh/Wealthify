@@ -3,7 +3,7 @@ import React from 'react';
 function Dashboard({ user, onLogout }) {
   return (
     <div className="dashboard">
-      <h2>Welcome to Wealthify! 🎉</h2>
+      <h2>Welcome to Wealthify!</h2>
       
       <div className="user-info">
         <h3>Your Profile</h3>
