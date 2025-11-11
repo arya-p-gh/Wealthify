@@ -17,35 +17,29 @@ const allowedOrigins = [
   process.env.CLIENT_ORIGIN,
 ].filter(Boolean);
 
+// Log configured client origin at startup to help with debugging deployments
+if (process.env.NODE_ENV === 'production') {
+  if (process.env.CLIENT_ORIGIN) {
+    console.log('🔒 CLIENT_ORIGIN configured:', process.env.CLIENT_ORIGIN);
+  } else {
+    console.warn('⚠️ CLIENT_ORIGIN is NOT set. Server will temporarily allow .vercel.app origins until you set CLIENT_ORIGIN in Render. For production tighten this as soon as possible.');
+  }
+} else {
+  console.log('🔍 CORS allowed origins (dev):', allowedOrigins);
+}
+
+// TEMPORARY: Open CORS for all origins.
+// This will echo the request Origin and allow credentialed requests.
+// IMPORTANT: This is insecure for long-term production use. Replace with
+// a strict origin check (exact CLIENT_ORIGIN) once your frontend is deployed.
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Log origin for debugging (will be quiet in production logs)
-      if (process.env.NODE_ENV !== 'production') console.log('🔍 CORS request from origin:', origin);
-
-      // Allow requests with no origin (curl, server-to-server)
-      if (!origin) return callback(null, true);
-
-      // Allow localhost during development
-      if (process.env.NODE_ENV !== 'production' && origin.includes('localhost')) {
-        return callback(null, true);
-      }
-
-      // Allow Render preview and hosted origins (onrender.com)
-      if (origin.includes('.onrender.com')) {
-        return callback(null, true);
-      }
-
-      // Allow explicit configured origins
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-
-      // Otherwise block
-      console.log('❌ CORS blocked origin:', origin);
-      return callback(new Error('Not allowed by CORS'));
-    },
+    origin: true, // reflect request origin — allows any origin
     credentials: true,
   })
 );
+
+console.warn('⚠️ CORS is currently open to all origins. This is a temporary convenience for debugging/deploy. Tighten it before production.');
 app.use(express.json());
 
 mongoose.connect(process.env.MONGODB_URI)

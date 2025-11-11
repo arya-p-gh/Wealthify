@@ -65,7 +65,6 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Debug endpoint only in non-production
 if (process.env.NODE_ENV !== 'production') {
   router.get('/debug/users', async (req, res) => {
     try {
