@@ -1,0 +1,6 @@
+🔍 CORS allowed origins (dev): [ 'http://localhost:3000', 'http://localhost:3001' ]
+⚠️ CORS is currently open to all origins. This is a temporary convenience for debugging/deploy. Tighten it before production.
+🚀 Server running on port 5001
+✅ MongoDB Connected
+New user created: { id: '69137fbf289e064cfa93d32f', email: 'smoke+test@example.com' }
+New user created: { id: '6913801a289e064cfa93d333', email: 'aryapand3y@gmail.com' }
