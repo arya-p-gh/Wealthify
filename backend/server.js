@@ -47,6 +47,11 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch((err) => console.log('❌ MongoDB Error:', err));
 
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/portfolio', require('./routes/portfolio'));
+app.use('/api/watchlist', require('./routes/watchlist'));
+app.use('/api/stocks', require('./routes/stocks'));
+
+
 
 // Health endpoint
 app.get('/api/health', (req, res) => {
