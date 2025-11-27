@@ -157,6 +157,7 @@ function Settings({ user, onLogout, onNavigate, onUpdateProfile }) {
                                     <button
                                         type="submit"
                                         className="flex items-center justify-center rounded-lg bg-primary text-white font-bold py-2.5 px-6 hover:bg-primary/90 transition-colors"
+                                        onClick={() => onNavigate('dashboard')}
                                     >
                                         Save Changes
                                     </button>
