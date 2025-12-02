@@ -55,12 +55,10 @@ function Dashboard({ user, token, onLogout, onNavigate }) {
     }
   };
 
-  // Calculate total portfolio value from real data
   const totalPortfolioValue = portfolio.reduce((sum, holding) => {
     return sum + (holding.currentPrice * holding.quantity);
   }, 0);
 
-  // Calculate today's change (simplified - using difference between current and average price)
   const totalChange = portfolio.reduce((sum, holding) => {
     return sum + ((holding.currentPrice - holding.averagePrice) * holding.quantity);
   }, 0);
@@ -73,21 +71,16 @@ function Dashboard({ user, token, onLogout, onNavigate }) {
   return (
     <div className="font-display bg-background-light dark:bg-background-dark text-[#0d131b] dark:text-gray-200 flex flex-col min-h-screen w-full overflow-hidden">
       <Navbar onNavigate={onNavigate} user={user} onLogout={onLogout} />
-
-      {/* Main Content */}
+      
       <div className="flex flex-1 flex-col overflow-y-auto">
-        {/* Page Content */}
         <main className="flex-1 p-8">
           <div className="grid grid-cols-12 gap-8">
-            {/* Center Column */}
             <div className="col-span-12 lg:col-span-8 space-y-8">
-              {/* PageHeading */}
               <div>
                 <h1 className="text-3xl font-bold leading-tight tracking-tight text-[#0d131b] dark:text-white">Welcome back, {user?.name?.split(' ')[0] || 'Alex'}!</h1>
                 <p className="text-gray-500 dark:text-gray-400 mt-1">Here is your portfolio overview for today.</p>
               </div>
 
-              {/* Charts (Portfolio Summary) */}
               <div className="bg-white dark:bg-[#18222e] p-6 rounded-xl border border-gray-200 dark:border-gray-800">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="flex flex-col">
@@ -107,7 +100,6 @@ function Dashboard({ user, token, onLogout, onNavigate }) {
                       </p>
                     </div>
                   </div>
-                  {/* SegmentedButtons */}
                   <div className="flex h-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 p-1">
                     {['1D', '1W', '1M', '1Y'].map((range) => (
                       <label key={range} className={`flex cursor-pointer h-full grow items-center justify-center rounded-md px-3 ${timeRange === range ? 'bg-white dark:bg-gray-700 shadow-sm text-[#0d131b] dark:text-white' : 'text-gray-600 dark:text-gray-300'} text-sm font-medium`}>
@@ -138,7 +130,6 @@ function Dashboard({ user, token, onLogout, onNavigate }) {
                 </div>
               </div>
 
-              {/* Portfolio Holdings Table */}
               <div className="bg-white dark:bg-[#18222e] p-6 rounded-xl border border-gray-200 dark:border-gray-800">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-[#0d131b] dark:text-white">Portfolio Holdings</h3>
@@ -198,7 +189,7 @@ function Dashboard({ user, token, onLogout, onNavigate }) {
                 )}
               </div>
 
-              {/* Market Summary - Indian Indices */}
+              
               <div>
                 <h3 className="text-lg font-semibold text-[#0d131b] dark:text-white mb-4">Indian Market Summary</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -221,11 +212,11 @@ function Dashboard({ user, token, onLogout, onNavigate }) {
               </div>
             </div>
 
-            {/* Right Sidebar */}
+            
             <div className="col-span-12 lg:col-span-4 space-y-8">
 
 
-              {/* Watchlist */}
+              
               <div className="bg-white dark:bg-[#18222e] p-6 rounded-xl border border-gray-200 dark:border-gray-800">
                 <h3 className="text-lg font-semibold text-[#0d131b] dark:text-white mb-4">My Watchlist</h3>
                 {loading ? (
@@ -257,14 +248,14 @@ function Dashboard({ user, token, onLogout, onNavigate }) {
                 )}
               </div>
 
-              {/* Top Performing Stocks */}
+              
               <div className="bg-white dark:bg-[#18222e] p-6 rounded-xl border border-gray-200 dark:border-gray-800">
                 <h3 className="text-lg font-semibold text-[#0d131b] dark:text-white mb-4">Top Performers</h3>
                 {loading ? (
                   <div className="text-center py-4 text-gray-500">Loading...</div>
                 ) : (
                   <div className="space-y-4">
-                    {/* Sort watchlist by highest percentage gain and show top 3 */}
+                    
                     {[...watchlist]
                       .sort((a, b) => b.priceChangePercent - a.priceChangePercent)
                       .slice(0, 3)

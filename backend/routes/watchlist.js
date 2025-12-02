@@ -1,9 +1,10 @@
+//watchlist CRUDs
+
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const Watchlist = require('../models/Watchlist');
 
-// Middleware to authenticate token
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'] || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
@@ -17,7 +18,6 @@ function authenticateToken(req, res, next) {
     }
 }
 
-// Get all watchlist items for the authenticated user
 router.get('/', authenticateToken, async (req, res) => {
     try {
         const items = await Watchlist.find({ userId: req.userId })
@@ -29,19 +29,16 @@ router.get('/', authenticateToken, async (req, res) => {
     }
 });
 
-// Add a stock to watchlist
 router.post('/', authenticateToken, async (req, res) => {
     try {
         const { symbol, companyName, currentPrice, priceChange, priceChangePercent, exchange } = req.body;
 
-        // Validate required fields
         if (!symbol || !companyName) {
             return res.status(400).json({
                 message: 'Missing required fields: symbol, companyName'
             });
         }
 
-        // Check if item already exists
         const existingItem = await Watchlist.findOne({
             userId: req.userId,
             symbol: symbol.toUpperCase()
@@ -74,7 +71,6 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 });
 
-// Update watchlist item (mainly for price updates)
 router.put('/:id', authenticateToken, async (req, res) => {
     try {
         const { currentPrice, priceChange, priceChangePercent } = req.body;
@@ -103,7 +99,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// Delete a watchlist item
 router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const item = await Watchlist.findOneAndDelete({

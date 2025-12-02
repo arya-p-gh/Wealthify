@@ -3,7 +3,6 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const Portfolio = require('../models/Portfolio');
 
-// Middleware to authenticate token
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'] || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
@@ -17,7 +16,6 @@ function authenticateToken(req, res, next) {
     }
 }
 
-// Get all portfolio holdings for the authenticated user
 router.get('/', authenticateToken, async (req, res) => {
     try {
         const holdings = await Portfolio.find({ userId: req.userId })
@@ -29,19 +27,16 @@ router.get('/', authenticateToken, async (req, res) => {
     }
 });
 
-// Add a new holding to portfolio
 router.post('/', authenticateToken, async (req, res) => {
     try {
         const { symbol, companyName, quantity, averagePrice, currentPrice, exchange } = req.body;
 
-        // Validate required fields
         if (!symbol || !companyName || !quantity || !averagePrice) {
             return res.status(400).json({
                 message: 'Missing required fields: symbol, companyName, quantity, averagePrice'
             });
         }
 
-        // Check if holding already exists
         const existingHolding = await Portfolio.findOne({
             userId: req.userId,
             symbol: symbol.toUpperCase()
@@ -74,7 +69,6 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 });
 
-// Update a holding
 router.put('/:id', authenticateToken, async (req, res) => {
     try {
         const { quantity, averagePrice, currentPrice } = req.body;
@@ -103,7 +97,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// Delete a holding
 router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         const holding = await Portfolio.findOneAndDelete({

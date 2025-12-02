@@ -32,16 +32,13 @@ function Settings({ user, onLogout, onNavigate, onUpdateProfile }) {
             <Navbar onNavigate={onNavigate} user={user} onLogout={onLogout} />
 
             <div className="flex flex-1 overflow-hidden">
-                {/* Main Content */}
                 <main className="flex-1 p-8 overflow-y-auto">
                     <div className="max-w-4xl mx-auto flex flex-col gap-8">
-                        {/* PageHeading */}
                         <header>
                             <h1 className="text-gray-900 dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">Settings</h1>
                             <p className="text-gray-500 dark:text-gray-400 mt-2 text-lg">Manage your account settings and preferences.</p>
                         </header>
 
-                        {/* Profile Settings */}
                         <div className="bg-white dark:bg-[#18222e] rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
                             <div className="p-6 border-b border-gray-200 dark:border-gray-800">
                                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">Profile Information</h2>
@@ -50,7 +47,7 @@ function Settings({ user, onLogout, onNavigate, onUpdateProfile }) {
 
                             <form onSubmit={handleSubmit} className="p-6 space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* Full Name */}
+                                    
                                     <div className="space-y-2">
                                         <label htmlFor="name" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                             Full Name <span className="text-red-500">*</span>
@@ -67,7 +64,6 @@ function Settings({ user, onLogout, onNavigate, onUpdateProfile }) {
                                         />
                                     </div>
 
-                                    {/* Email */}
                                     <div className="space-y-2">
                                         <label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                             Email Address <span className="text-red-500">*</span>
@@ -84,7 +80,6 @@ function Settings({ user, onLogout, onNavigate, onUpdateProfile }) {
                                         />
                                     </div>
 
-                                    {/* Phone */}
                                     <div className="space-y-2">
                                         <label htmlFor="phone" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                             Phone Number
@@ -100,7 +95,6 @@ function Settings({ user, onLogout, onNavigate, onUpdateProfile }) {
                                         />
                                     </div>
 
-                                    {/* Location */}
                                     <div className="space-y-2">
                                         <label htmlFor="location" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                             Location
@@ -116,7 +110,6 @@ function Settings({ user, onLogout, onNavigate, onUpdateProfile }) {
                                         />
                                     </div>
 
-                                    {/* Occupation */}
                                     <div className="space-y-2">
                                         <label htmlFor="occupation" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                             Occupation
@@ -133,7 +126,6 @@ function Settings({ user, onLogout, onNavigate, onUpdateProfile }) {
                                     </div>
                                 </div>
 
-                                {/* Bio */}
                                 <div className="space-y-2">
                                     <label htmlFor="bio" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Bio

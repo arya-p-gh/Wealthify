@@ -5,14 +5,12 @@ function Navbar({ onNavigate, user, onLogout }) {
     const [theme, setTheme] = useState('light');
     const dropdownRef = useRef(null);
 
-    // Load theme from localStorage on mount
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme') || 'light';
         setTheme(savedTheme);
         applyTheme(savedTheme);
     }, []);
 
-    // Close dropdown when clicking outside
     useEffect(() => {
         function handleClickOutside(event) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -87,7 +85,6 @@ function Navbar({ onNavigate, user, onLogout }) {
                 <label className="hidden sm:flex flex-col min-w-40 !h-10 max-w-64">
                 </label>
 
-                {/* Profile Dropdown */}
                 <div className="relative" ref={dropdownRef}>
                     <button
                         onClick={() => setShowDropdown(!showDropdown)}
@@ -95,16 +92,14 @@ function Navbar({ onNavigate, user, onLogout }) {
                         style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBOdnZGrHDll105AHLxBpXyFHbO8pIKe0Jo8v4je3oRgHUcoyBenfOjS9koZNKig-AqN5OTCb20pks9aQbpE9jLz6k4bmQ7eAFuzpfOlf5z7cGIkNlQkBnSt4Dy5Sa6DGml-T7Yc7gGNGIpgebFU84PiHXG2tFe7O5OkFBfXkFF2_IEI30zmxGX8qx-G84ht0cblFQ9uaY9HZJv37zag2Mfo5C6aV3UfNb0lUeJoW-bDC-MmvOaHStiEkyUkef4uNyqdBfKMBV2wqQ")' }}
                     ></button>
 
-                    {/* Dropdown Menu */}
                     {showDropdown && (
                         <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#18222e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 py-2 z-50">
-                            {/* User Info */}
+
                             <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
                                 <p className="text-sm font-semibold text-gray-900 dark:text-white">{user?.name || 'User'}</p>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email || 'user@example.com'}</p>
                             </div>
 
-                            {/* Theme Toggle */}
                             <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
@@ -126,7 +121,6 @@ function Navbar({ onNavigate, user, onLogout }) {
                                 </div>
                             </div>
 
-                            {/* Settings */}
                             <button
                                 onClick={() => {
                                     setShowDropdown(false);
@@ -138,7 +132,6 @@ function Navbar({ onNavigate, user, onLogout }) {
                                 <span>Settings</span>
                             </button>
 
-                            {/* Logout */}
                             <button
                                 onClick={() => {
                                     setShowDropdown(false);

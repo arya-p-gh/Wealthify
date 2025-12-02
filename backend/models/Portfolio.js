@@ -1,3 +1,5 @@
+// portfolio schema for mongodb
+
 const mongoose = require('mongoose');
 
 const portfolioSchema = new mongoose.Schema({
@@ -44,7 +46,6 @@ const portfolioSchema = new mongoose.Schema({
     }
 });
 
-// Create compound index for userId and symbol to prevent duplicates
 portfolioSchema.index({ userId: 1, symbol: 1 }, { unique: true });
 
 module.exports = mongoose.model('Portfolio', portfolioSchema);

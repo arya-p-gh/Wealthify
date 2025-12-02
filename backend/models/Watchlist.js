@@ -1,3 +1,5 @@
+// watchlist schema for mongodb
+
 const mongoose = require('mongoose');
 
 const watchlistSchema = new mongoose.Schema({
@@ -42,7 +44,6 @@ const watchlistSchema = new mongoose.Schema({
     }
 });
 
-// Create compound index for userId and symbol to prevent duplicates
 watchlistSchema.index({ userId: 1, symbol: 1 }, { unique: true });
 
 module.exports = mongoose.model('Watchlist', watchlistSchema);

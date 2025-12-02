@@ -11,7 +11,6 @@ function AddPortfolioModal({ token, onClose, onSuccess, editHolding, initialStoc
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // If editing or initial stock provided, populate fields
     useEffect(() => {
         if (editHolding) {
             setSelectedStock({
@@ -23,7 +22,6 @@ function AddPortfolioModal({ token, onClose, onSuccess, editHolding, initialStoc
             setAveragePrice(editHolding.averagePrice.toString());
         } else if (initialStock) {
             setSelectedStock(initialStock);
-            // Fetch price for initial stock
             fetch(`${API_URL}/stocks/price/${initialStock.symbol}`)
                 .then(res => res.json())
                 .then(data => {
@@ -33,7 +31,6 @@ function AddPortfolioModal({ token, onClose, onSuccess, editHolding, initialStoc
         }
     }, [editHolding, initialStock]);
 
-    // Search stocks as user types
     useEffect(() => {
         if (searchQuery.length >= 2 && !selectedStock) {
             const timer = setTimeout(() => {
@@ -60,7 +57,6 @@ function AddPortfolioModal({ token, onClose, onSuccess, editHolding, initialStoc
         setSearchQuery('');
         setSearchResults([]);
 
-        // Fetch current price
         try {
             const response = await fetch(`${API_URL}/stocks/price/${stock.symbol}`);
             const data = await response.json();
@@ -141,7 +137,7 @@ function AddPortfolioModal({ token, onClose, onSuccess, editHolding, initialStoc
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* Stock Search */}
+                    
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Search Indian Stock
@@ -197,7 +193,7 @@ function AddPortfolioModal({ token, onClose, onSuccess, editHolding, initialStoc
                         )}
                     </div>
 
-                    {/* Quantity */}
+                    
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Quantity
@@ -214,7 +210,7 @@ function AddPortfolioModal({ token, onClose, onSuccess, editHolding, initialStoc
                         />
                     </div>
 
-                    {/* Average Price */}
+                    
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Average Price (₹)
@@ -231,7 +227,7 @@ function AddPortfolioModal({ token, onClose, onSuccess, editHolding, initialStoc
                         />
                     </div>
 
-                    {/* Buttons */}
+                    
                     <div className="flex gap-3 pt-4">
                         <button
                             type="button"

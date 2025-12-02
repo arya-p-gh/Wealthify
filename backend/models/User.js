@@ -1,3 +1,6 @@
+// user schema for mongodb
+
+
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 

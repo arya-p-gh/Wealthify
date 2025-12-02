@@ -9,7 +9,6 @@ function AddWatchlistModal({ token, onClose, onSuccess }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // Search stocks as user types
     useEffect(() => {
         if (searchQuery.length >= 2 && !selectedStock) {
             const timer = setTimeout(() => {
@@ -49,7 +48,6 @@ function AddWatchlistModal({ token, onClose, onSuccess }) {
         }
 
         try {
-            // Fetch current price
             const priceResponse = await fetch(`${API_URL}/stocks/price/${selectedStock.symbol}`);
             const priceData = await priceResponse.json();
 
@@ -105,7 +103,6 @@ function AddWatchlistModal({ token, onClose, onSuccess }) {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* Stock Search */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Search Indian Stock
@@ -157,8 +154,6 @@ function AddWatchlistModal({ token, onClose, onSuccess }) {
                             </div>
                         )}
                     </div>
-
-                    {/* Buttons */}
                     <div className="flex gap-3 pt-4">
                         <button
                             type="button"

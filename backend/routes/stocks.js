@@ -1,8 +1,9 @@
+// stocks CRUDs
+
 const express = require('express');
 const router = express.Router();
 const stockService = require('../services/stockService');
 
-// Search for stocks
 router.get('/search', async (req, res) => {
     try {
         const { q } = req.query;
@@ -18,7 +19,6 @@ router.get('/search', async (req, res) => {
     }
 });
 
-// Get current price for a stock
 router.get('/price/:symbol', async (req, res) => {
     try {
         const { symbol } = req.params;
@@ -29,7 +29,6 @@ router.get('/price/:symbol', async (req, res) => {
     }
 });
 
-// Get detailed quote for a stock
 router.get('/quote/:symbol', async (req, res) => {
     try {
         const { symbol } = req.params;
@@ -40,7 +39,6 @@ router.get('/quote/:symbol', async (req, res) => {
     }
 });
 
-// Get all available Indian stocks
 router.get('/list', (req, res) => {
     try {
         res.json({ stocks: stockService.INDIAN_STOCKS });
@@ -49,7 +47,6 @@ router.get('/list', (req, res) => {
     }
 });
 
-// Update prices for multiple stocks
 router.post('/prices', async (req, res) => {
     try {
         const { symbols } = req.body;

@@ -46,7 +46,6 @@ function Signup({ onSignupSuccess, onSwitchToLogin }) {
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4 sm:p-6 lg:p-8">
       <div className="w-full max-w-md space-y-10">
-        {/* Logo and Tagline - Centered */}
         <div className="flex flex-col items-center justify-center gap-2 text-center">
           <div className="flex items-center gap-2">
             <svg className="w-9 h-9 text-[#136dec]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -57,7 +56,6 @@ function Signup({ onSignupSuccess, onSwitchToLogin }) {
           <p className="text-[#A1A1AA]">Access your portfolio with ease and elegance.</p>
         </div>
 
-        {/* Signup Form */}
         <div className="rounded-xl border border-[#27272A] bg-[#18181B] p-8 md:p-10">
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col space-y-6">
@@ -139,7 +137,6 @@ function Signup({ onSignupSuccess, onSwitchToLogin }) {
           </form>
         </div>
 
-        {/* Sign in link */}
         <div className="text-center text-sm text-[#A1A1AA]">
           <span>Already have an account?</span>
           <button

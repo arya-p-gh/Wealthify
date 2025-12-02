@@ -13,15 +13,12 @@ function StockCatalogue({ user, token, onLogout, onNavigate }) {
     const [sortBy, setSortBy] = useState('symbol');
     const [sortOrder, setSortOrder] = useState('asc');
 
-    // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 7;
 
-    // Portfolio Modal state
     const [showPortfolioModal, setShowPortfolioModal] = useState(false);
     const [selectedStockForPortfolio, setSelectedStockForPortfolio] = useState(null);
 
-    // Sector mapping is now handled by the backend
 
 
     useEffect(() => {
@@ -30,7 +27,7 @@ function StockCatalogue({ user, token, onLogout, onNavigate }) {
 
     useEffect(() => {
         filterAndSortStocks();
-        setCurrentPage(1); // Reset to first page on filter change
+        setCurrentPage(1); 
     }, [stocks, searchQuery, selectedSector, sortBy, sortOrder]);
 
     const fetchStocks = async () => {
@@ -44,7 +41,6 @@ function StockCatalogue({ user, token, onLogout, onNavigate }) {
             });
             const data = await response.json();
             if (response.ok) {
-                // Fetch prices for all stocks
                 const stocksWithPrices = await Promise.all(
                     data.stocks.map(async (stock) => {
                         try {
@@ -75,7 +71,6 @@ function StockCatalogue({ user, token, onLogout, onNavigate }) {
     const filterAndSortStocks = () => {
         let filtered = [...stocks];
 
-        // Apply search filter
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             filtered = filtered.filter(stock =>
@@ -84,12 +79,10 @@ function StockCatalogue({ user, token, onLogout, onNavigate }) {
             );
         }
 
-        // Apply sector filter
         if (selectedSector !== 'All') {
             filtered = filtered.filter(stock => stock.sector === selectedSector);
         }
 
-        // Apply sorting
         filtered.sort((a, b) => {
             let compareA, compareB;
 
@@ -164,7 +157,6 @@ function StockCatalogue({ user, token, onLogout, onNavigate }) {
         setShowPortfolioModal(true);
     };
 
-    // Pagination Logic
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentStocks = filteredStocks.slice(indexOfFirstItem, indexOfLastItem);
@@ -180,7 +172,6 @@ function StockCatalogue({ user, token, onLogout, onNavigate }) {
 
             <main className="flex-1 p-8 overflow-y-auto">
                 <div className="max-w-7xl mx-auto space-y-6">
-                    {/* Header */}
                     <div>
                         <h1 className="text-4xl font-bold text-[#0d131b] dark:text-white">Stock Catalogue</h1>
                         <p className="text-gray-500 dark:text-gray-400 mt-2">
@@ -188,10 +179,8 @@ function StockCatalogue({ user, token, onLogout, onNavigate }) {
                         </p>
                     </div>
 
-                    {/* Filters & Search */}
                     <div className="bg-white dark:bg-[#18222e] rounded-xl border border-gray-200 dark:border-gray-800 p-6">
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            {/* Search */}
                             <div className="md:col-span-2">
                                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                                     Search Stocks
@@ -210,7 +199,6 @@ function StockCatalogue({ user, token, onLogout, onNavigate }) {
                                 </div>
                             </div>
 
-                            {/* Sector Filter */}
                             <div>
                                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                                     Sector
@@ -226,7 +214,6 @@ function StockCatalogue({ user, token, onLogout, onNavigate }) {
                                 </select>
                             </div>
 
-                            {/* Sort By */}
                             <div>
                                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                                     Sort By
@@ -254,7 +241,6 @@ function StockCatalogue({ user, token, onLogout, onNavigate }) {
                             </div>
                         </div>
 
-                        {/* Active Filters */}
                         {(searchQuery || selectedSector !== 'All') && (
                             <div className="mt-4 flex items-center gap-2 flex-wrap">
                                 <span className="text-sm text-gray-500 dark:text-gray-400">Active filters:</span>
@@ -278,7 +264,6 @@ function StockCatalogue({ user, token, onLogout, onNavigate }) {
                         )}
                     </div>
 
-                    {/* Results Count */}
                     <div className="flex items-center justify-between">
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                             Showing <span className="font-semibold text-gray-900 dark:text-white">{indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredStocks.length)}</span> of <span className="font-semibold text-gray-900 dark:text-white">{filteredStocks.length}</span> stocks
@@ -292,7 +277,6 @@ function StockCatalogue({ user, token, onLogout, onNavigate }) {
                         </button>
                     </div>
 
-                    {/* Stock Table */}
                     <div className="bg-white dark:bg-[#18222e] rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
                         {loading ? (
                             <div className="p-8 text-center text-gray-500">Loading stocks...</div>
@@ -376,7 +360,6 @@ function StockCatalogue({ user, token, onLogout, onNavigate }) {
                         )}
                     </div>
 
-                    {/* Pagination Controls */}
                     {filteredStocks.length > itemsPerPage && (
                         <div className="flex justify-center items-center gap-2 mt-6">
                             <button
@@ -412,7 +395,6 @@ function StockCatalogue({ user, token, onLogout, onNavigate }) {
                 </div>
             </main>
 
-            {/* Add Portfolio Modal */}
             {showPortfolioModal && (
                 <AddPortfolioModal
                     token={token}

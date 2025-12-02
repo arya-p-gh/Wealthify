@@ -39,7 +39,6 @@ function Portfolio({ user, token, onLogout, onNavigate }) {
     };
 
     const handleDelete = async (holdingId) => {
-        // Removed confirmation dialog for seamless experience
 
         try {
             const response = await fetch(`${API_URL}/portfolio/${holdingId}`, {
@@ -70,7 +69,7 @@ function Portfolio({ user, token, onLogout, onNavigate }) {
 
             <main className="flex-1 p-8 overflow-y-auto">
                 <div className="max-w-7xl mx-auto space-y-6">
-                    {/* Header */}
+                    
                     <div className="flex justify-between items-center">
                         <h1 className="text-4xl font-bold text-[#0d131b] dark:text-white">Your Portfolio</h1>
                         <button
@@ -82,7 +81,7 @@ function Portfolio({ user, token, onLogout, onNavigate }) {
                         </button>
                     </div>
 
-                    {/* Stats */}
+                    
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="bg-white dark:bg-[#18222e] p-6 rounded-xl border border-gray-200 dark:border-gray-800">
                             <p className="text-gray-500 dark:text-gray-400 text-sm">Total Value</p>
@@ -107,7 +106,7 @@ function Portfolio({ user, token, onLogout, onNavigate }) {
                         </div>
                     </div>
 
-                    {/* Holdings Table */}
+                    
                     <div className="bg-white dark:bg-[#18222e] rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
                         <div className="p-6 border-b border-gray-200 dark:border-gray-800">
                             <h2 className="text-xl font-bold text-[#0d131b] dark:text-white">Holdings</h2>
@@ -194,7 +193,6 @@ function Portfolio({ user, token, onLogout, onNavigate }) {
                 </div>
             </main>
 
-            {/* Add/Edit Modal */}
             {showAddModal && (
                 <AddPortfolioModal
                     token={token}
