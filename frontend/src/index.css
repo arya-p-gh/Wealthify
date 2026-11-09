@@ -2,16 +2,132 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  html {
+    color-scheme: dark;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-ink-900 text-ink-100 font-sans antialiased;
+    font-feature-settings: 'zero', 'calt' 0;
+    caret-color: #39ff95;
+    /* faint terminal grid */
+    background-image:
+      linear-gradient(rgba(57, 255, 149, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(57, 255, 149, 0.025) 1px, transparent 1px);
+    background-size: 32px 32px;
+    background-attachment: fixed;
+  }
+  /* CRT scanlines + vignette over everything, never blocks clicks */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    pointer-events: none;
+    background:
+      repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.18) 0px, rgba(0, 0, 0, 0.18) 1px, transparent 1px, transparent 3px),
+      radial-gradient(120% 90% at 50% 50%, transparent 60%, rgba(0, 0, 0, 0.45) 100%);
+  }
+  ::selection {
+    background: rgba(57, 255, 149, 0.3);
+    color: #ecfdf0;
+  }
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #1a2e20 transparent;
+  }
+  :focus-visible {
+    outline: 1px solid #39ff95;
+    outline-offset: 2px;
+  }
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+@layer components {
+  .num {
+    font-variant-numeric: tabular-nums slashed-zero;
+  }
+  /* Panels: hairline green border with bracketed corners */
+  .surface,
+  .surface-raised {
+    @apply rounded-sm border border-neon-300/[0.12] bg-ink-850/85;
+    background-image:
+      linear-gradient(#39ff95, #39ff95), linear-gradient(#39ff95, #39ff95), linear-gradient(#39ff95, #39ff95), linear-gradient(#39ff95, #39ff95);
+    background-size: 8px 1px, 1px 8px, 8px 1px, 1px 8px;
+    background-position: top left, top left, bottom right, bottom right;
+    background-repeat: no-repeat;
+  }
+  .surface-raised {
+    @apply bg-ink-800/85;
+  }
+  .text-neon {
+    color: #39ff95;
+    text-shadow: 0 0 12px rgba(57, 255, 149, 0.55), 0 0 2px rgba(57, 255, 149, 0.8);
+  }
+  .glow {
+    text-shadow: 0 0 10px currentColor;
+  }
+  .eyebrow {
+    @apply text-[11px] font-medium uppercase tracking-[0.18em] text-neon-400;
+  }
+  .eyebrow::before {
+    content: '// ';
+    @apply text-ink-400;
+  }
+  .field {
+    @apply w-full rounded-sm bg-ink-950/80 border border-neon-300/[0.15] px-4 py-3 text-ink-50 placeholder:text-ink-400
+      outline-none transition focus:border-neon-300/70 focus:shadow-glow;
+  }
+  select.field {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2339ff95' stroke-width='2' stroke-linecap='square'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+  }
+  .skeleton {
+    background: linear-gradient(90deg, #09110c 0%, #122016 50%, #09110c 100%);
+    background-size: 200% 100%;
+    @apply animate-shimmer rounded-sm;
+  }
+  .cursor::after {
+    content: '';
+    display: inline-block;
+    width: 0.55em;
+    height: 1em;
+    margin-left: 0.15em;
+    vertical-align: -0.12em;
+    background: #39ff95;
+    box-shadow: 0 0 10px rgba(57, 255, 149, 0.7);
+    animation: blink 1.05s step-end infinite;
+  }
+  .grain {
+    position: relative;
+  }
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+
+.recharts-wrapper:focus,
+.recharts-surface:focus {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor::after,
+  .animate-marquee,
+  .animate-blink {
+    animation: none !important;
+  }
 }

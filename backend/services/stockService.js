@@ -1,215 +1,191 @@
-const YahooFinance = require('yahoo-finance2').default;
-const yahooFinance = new YahooFinance();
+// Market data service.
+// Uses Yahoo Finance's public chart endpoint (no crumb/cookie needed), which is far
+// less prone to 429s than the quote endpoint. Results are cached in memory.
 
-const priceCache = new Map();
-const CACHE_DURATION = 300000; 
+const axios = require('axios');
+const INDIAN_STOCKS = require('../data/stocks');
 
-let apiCallCount = 0;
+const QUOTE_TTL = 60 * 1000; // 1 min
+const HISTORY_TTL = 10 * 60 * 1000; // 10 min
+const quoteCache = new Map();
+const historyCache = new Map();
+const inflight = new Map();
 
-const INDIAN_STOCKS = [
-    // IT Sector
-    { symbol: 'TCS.BO', name: 'Tata Consultancy Services Ltd', exchange: 'BSE', sector: 'IT' },
-    { symbol: 'INFY.BO', name: 'Infosys Ltd', exchange: 'BSE', sector: 'IT' },
-    { symbol: 'WIPRO.BO', name: 'Wipro Ltd', exchange: 'BSE', sector: 'IT' },
-    { symbol: 'HCLTECH.BO', name: 'HCL Technologies Ltd', exchange: 'BSE', sector: 'IT' },
-    { symbol: 'TECHM.BO', name: 'Tech Mahindra Ltd', exchange: 'BSE', sector: 'IT' },
-    { symbol: 'LTI.BO', name: 'LTI Mindtree Ltd', exchange: 'BSE', sector: 'IT' },
-    { symbol: 'MPHASIS.BO', name: 'Mphasis Ltd', exchange: 'BSE', sector: 'IT' },
-    { symbol: 'COFORGE.BO', name: 'Coforge Ltd', exchange: 'BSE', sector: 'IT' },
-
-    // Banking & Finance
-    { symbol: 'HDFCBANK.BO', name: 'HDFC Bank Ltd', exchange: 'BSE', sector: 'Banking' },
-    { symbol: 'ICICIBANK.BO', name: 'ICICI Bank Ltd', exchange: 'BSE', sector: 'Banking' },
-    { symbol: 'SBIN.BO', name: 'State Bank of India', exchange: 'BSE', sector: 'Banking' },
-    { symbol: 'KOTAKBANK.BO', name: 'Kotak Mahindra Bank Ltd', exchange: 'BSE', sector: 'Banking' },
-    { symbol: 'AXISBANK.BO', name: 'Axis Bank Ltd', exchange: 'BSE', sector: 'Banking' },
-    { symbol: 'INDUSINDBK.BO', name: 'IndusInd Bank Ltd', exchange: 'BSE', sector: 'Banking' },
-    { symbol: 'BANDHANBNK.BO', name: 'Bandhan Bank Ltd', exchange: 'BSE', sector: 'Banking' },
-    { symbol: 'FEDERALBNK.BO', name: 'Federal Bank Ltd', exchange: 'BSE', sector: 'Banking' },
-    { symbol: 'IDFCFIRSTB.BO', name: 'IDFC First Bank Ltd', exchange: 'BSE', sector: 'Banking' },
-    { symbol: 'PNB.BO', name: 'Punjab National Bank', exchange: 'BSE', sector: 'Banking' },
-    { symbol: 'BANKBARODA.BO', name: 'Bank of Baroda', exchange: 'BSE', sector: 'Banking' },
-
-    // Conglomerates & Energy
-    { symbol: 'RELIANCE.BO', name: 'Reliance Industries Ltd', exchange: 'BSE', sector: 'Energy' },
-    { symbol: 'ADANIENT.BO', name: 'Adani Enterprises Ltd', exchange: 'BSE', sector: 'Energy' },
-    { symbol: 'ONGC.BO', name: 'Oil and Natural Gas Corporation Ltd', exchange: 'BSE', sector: 'Energy' },
-    { symbol: 'BPCL.BO', name: 'Bharat Petroleum Corporation Ltd', exchange: 'BSE', sector: 'Energy' },
-    { symbol: 'IOC.BO', name: 'Indian Oil Corporation Ltd', exchange: 'BSE', sector: 'Energy' },
-    { symbol: 'COALINDIA.BO', name: 'Coal India Ltd', exchange: 'BSE', sector: 'Energy' },
-    { symbol: 'GAIL.BO', name: 'GAIL (India) Ltd', exchange: 'BSE', sector: 'Energy' },
-
-    // Automobiles
-    { symbol: 'MARUTI.BO', name: 'Maruti Suzuki India Ltd', exchange: 'BSE', sector: 'Automobile' },
-    { symbol: 'TATAMOTORS.BO', name: 'Tata Motors Ltd', exchange: 'BSE', sector: 'Automobile' },
-    { symbol: 'M&M.BO', name: 'Mahindra & Mahindra Ltd', exchange: 'BSE', sector: 'Automobile' },
-    { symbol: 'BAJAJ-AUTO.BO', name: 'Bajaj Auto Ltd', exchange: 'BSE', sector: 'Automobile' },
-    { symbol: 'HEROMOTOCO.BO', name: 'Hero MotoCorp Ltd', exchange: 'BSE', sector: 'Automobile' },
-    { symbol: 'EICHERMOT.BO', name: 'Eicher Motors Ltd', exchange: 'BSE', sector: 'Automobile' },
-    { symbol: 'TVSMOTOR.BO', name: 'TVS Motor Company Ltd', exchange: 'BSE', sector: 'Automobile' },
-    { symbol: 'ASHOKLEY.BO', name: 'Ashok Leyland Ltd', exchange: 'BSE', sector: 'Automobile' },
-
-    // Pharmaceuticals
-    { symbol: 'SUNPHARMA.BO', name: 'Sun Pharmaceutical Industries Ltd', exchange: 'BSE', sector: 'Pharma' },
-    { symbol: 'DRREDDY.BO', name: 'Dr Reddys Laboratories Ltd', exchange: 'BSE', sector: 'Pharma' },
-    { symbol: 'CIPLA.BO', name: 'Cipla Ltd', exchange: 'BSE', sector: 'Pharma' },
-    { symbol: 'DIVISLAB.BO', name: 'Divi\'s Laboratories Ltd', exchange: 'BSE', sector: 'Pharma' },
-    { symbol: 'BIOCON.BO', name: 'Biocon Ltd', exchange: 'BSE', sector: 'Pharma' },
-    { symbol: 'LUPIN.BO', name: 'Lupin Ltd', exchange: 'BSE', sector: 'Pharma' },
-    { symbol: 'AUROPHARMA.BO', name: 'Aurobindo Pharma Ltd', exchange: 'BSE', sector: 'Pharma' },
-    { symbol: 'TORNTPHARM.BO', name: 'Torrent Pharmaceuticals Ltd', exchange: 'BSE', sector: 'Pharma' },
-
-    // FMCG & Consumer
-    { symbol: 'HINDUNILVR.BO', name: 'Hindustan Unilever Ltd', exchange: 'BSE', sector: 'FMCG' },
-    { symbol: 'ITC.BO', name: 'ITC Ltd', exchange: 'BSE', sector: 'FMCG' },
-    { symbol: 'NESTLEIND.BO', name: 'Nestle India Ltd', exchange: 'BSE', sector: 'FMCG' },
-    { symbol: 'BRITANNIA.BO', name: 'Britannia Industries Ltd', exchange: 'BSE', sector: 'FMCG' },
-    { symbol: 'DABUR.BO', name: 'Dabur India Ltd', exchange: 'BSE', sector: 'FMCG' },
-    { symbol: 'MARICO.BO', name: 'Marico Ltd', exchange: 'BSE', sector: 'FMCG' },
-    { symbol: 'GODREJCP.BO', name: 'Godrej Consumer Products Ltd', exchange: 'BSE', sector: 'FMCG' },
-    { symbol: 'TATACONSUM.BO', name: 'Tata Consumer Products Ltd', exchange: 'BSE', sector: 'FMCG' },
-
-    // Metals & Mining
-    { symbol: 'TATASTEEL.BO', name: 'Tata Steel Ltd', exchange: 'BSE', sector: 'Metals' },
-    { symbol: 'HINDALCO.BO', name: 'Hindalco Industries Ltd', exchange: 'BSE', sector: 'Metals' },
-    { symbol: 'JSWSTEEL.BO', name: 'JSW Steel Ltd', exchange: 'BSE', sector: 'Metals' },
-    { symbol: 'VEDL.BO', name: 'Vedanta Ltd', exchange: 'BSE', sector: 'Metals' },
-    { symbol: 'SAIL.BO', name: 'Steel Authority of India Ltd', exchange: 'BSE', sector: 'Metals' },
-    { symbol: 'NMDC.BO', name: 'NMDC Ltd', exchange: 'BSE', sector: 'Metals' },
-    { symbol: 'HINDZINC.BO', name: 'Hindustan Zinc Ltd', exchange: 'BSE', sector: 'Metals' },
-
-    // Telecom
-    { symbol: 'BHARTIARTL.BO', name: 'Bharti Airtel Ltd', exchange: 'BSE', sector: 'Telecom' },
-    { symbol: 'IDEA.BO', name: 'Vodafone Idea Ltd', exchange: 'BSE', sector: 'Telecom' },
-
-    // Infrastructure & Construction
-    { symbol: 'LT.BO', name: 'Larsen & Toubro Ltd', exchange: 'BSE', sector: 'Infrastructure' },
-    { symbol: 'ADANIPORTS.BO', name: 'Adani Ports and Special Economic Zone Ltd', exchange: 'BSE', sector: 'Infrastructure' },
-    { symbol: 'ULTRACEMCO.BO', name: 'UltraTech Cement Ltd', exchange: 'BSE', sector: 'Infrastructure' },
-    { symbol: 'GRASIM.BO', name: 'Grasim Industries Ltd', exchange: 'BSE', sector: 'Infrastructure' },
-    { symbol: 'SHREECEM.BO', name: 'Shree Cement Ltd', exchange: 'BSE', sector: 'Infrastructure' },
-    { symbol: 'AMBUJACEM.BO', name: 'Ambuja Cements Ltd', exchange: 'BSE', sector: 'Infrastructure' },
-    { symbol: 'ACC.BO', name: 'ACC Ltd', exchange: 'BSE', sector: 'Infrastructure' },
-
-    // Power & Utilities
-    { symbol: 'NTPC.BO', name: 'NTPC Ltd', exchange: 'BSE', sector: 'Power' },
-    { symbol: 'POWERGRID.BO', name: 'Power Grid Corporation of India Ltd', exchange: 'BSE', sector: 'Power' },
-    { symbol: 'ADANIGREEN.BO', name: 'Adani Green Energy Ltd', exchange: 'BSE', sector: 'Power' },
-    { symbol: 'TATAPOWER.BO', name: 'Tata Power Company Ltd', exchange: 'BSE', sector: 'Power' },
-
-    // Retail & E-commerce
-    { symbol: 'DMART.BO', name: 'Avenue Supermarts Ltd', exchange: 'BSE', sector: 'Retail' },
-    { symbol: 'TRENT.BO', name: 'Trent Ltd', exchange: 'BSE', sector: 'Retail' },
-    { symbol: 'TITAN.BO', name: 'Titan Company Ltd', exchange: 'BSE', sector: 'Retail' },
-
-    // Real Estate
-    { symbol: 'DLF.BO', name: 'DLF Ltd', exchange: 'BSE', sector: 'Real Estate' },
-    { symbol: 'GODREJPROP.BO', name: 'Godrej Properties Ltd', exchange: 'BSE', sector: 'Real Estate' },
-    { symbol: 'OBEROIRLTY.BO', name: 'Oberoi Realty Ltd', exchange: 'BSE', sector: 'Real Estate' },
-    { symbol: 'PRESTIGE.BO', name: 'Prestige Estates Projects Ltd', exchange: 'BSE', sector: 'Real Estate' },
-
-    // Paints & Chemicals
-    { symbol: 'ASIANPAINT.BO', name: 'Asian Paints Ltd', exchange: 'BSE', sector: 'Paints' },
-    { symbol: 'PIDILITIND.BO', name: 'Pidilite Industries Ltd', exchange: 'BSE', sector: 'Paints' },
-    { symbol: 'BERGEPAINT.BO', name: 'Berger Paints India Ltd', exchange: 'BSE', sector: 'Paints' },
-
-    // Electronics & Electricals
-    { symbol: 'HAVELLS.BO', name: 'Havells India Ltd', exchange: 'BSE', sector: 'Electronics' },
-    { symbol: 'VOLTAS.BO', name: 'Voltas Ltd', exchange: 'BSE', sector: 'Electronics' },
-    { symbol: 'CROMPTON.BO', name: 'Crompton Greaves Consumer Electricals Ltd', exchange: 'BSE', sector: 'Electronics' },
-
-    // Insurance
-    { symbol: 'SBILIFE.BO', name: 'SBI Life Insurance Company Ltd', exchange: 'BSE', sector: 'Insurance' },
-    { symbol: 'HDFCLIFE.BO', name: 'HDFC Life Insurance Company Ltd', exchange: 'BSE', sector: 'Insurance' },
-    { symbol: 'ICICIPRULI.BO', name: 'ICICI Prudential Life Insurance Company Ltd', exchange: 'BSE', sector: 'Insurance' },
-
-    // Others
-    { symbol: 'BAJFINANCE.BO', name: 'Bajaj Finance Ltd', exchange: 'BSE', sector: 'Finance' },
-    { symbol: 'BAJAJFINSV.BO', name: 'Bajaj Finserv Ltd', exchange: 'BSE', sector: 'Finance' },
-    { symbol: 'SIEMENS.BO', name: 'Siemens Ltd', exchange: 'BSE', sector: 'Industrial' },
-    { symbol: 'ABB.BO', name: 'ABB India Ltd', exchange: 'BSE', sector: 'Industrial' },
-    { symbol: 'BOSCHLTD.BO', name: 'Bosch Ltd', exchange: 'BSE', sector: 'Industrial' }
+const INDICES = [
+    { symbol: '^NSEI', name: 'NIFTY 50' },
+    { symbol: '^BSESN', name: 'SENSEX' },
+    { symbol: '^NSEBANK', name: 'NIFTY BANK' },
+    { symbol: '^CNXIT', name: 'NIFTY IT' },
 ];
 
-function searchStocks(query) {
-    if (!query || query.length < 2) {
-        return [];
+const RANGES = {
+    '1D': { range: '1d', interval: '5m' },
+    '1W': { range: '5d', interval: '30m' },
+    '1M': { range: '1mo', interval: '1d' },
+    '6M': { range: '6mo', interval: '1d' },
+    '1Y': { range: '1y', interval: '1d' },
+    '5Y': { range: '5y', interval: '1wk' },
+};
+
+const http = axios.create({
+    timeout: 10000,
+    headers: { 'User-Agent': 'Mozilla/5.0 (Wealthify)' },
+});
+
+const findStock = (symbol) => INDIAN_STOCKS.find((s) => s.symbol === String(symbol).toUpperCase());
+
+async function fetchChart(symbol, range, interval) {
+    const key = `${symbol}|${range}|${interval}`;
+    if (inflight.has(key)) return inflight.get(key);
+    const p = (async () => {
+        let lastErr;
+        for (const host of ['query1', 'query2']) {
+            try {
+                const { data } = await http.get(
+                    `https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}`,
+                    { params: { range, interval, includePrePost: false } }
+                );
+                const result = data?.chart?.result?.[0];
+                if (!result) throw new Error(data?.chart?.error?.description || 'No data');
+                return result;
+            } catch (err) {
+                lastErr = err;
+            }
+        }
+        throw lastErr;
+    })().finally(() => inflight.delete(key));
+    inflight.set(key, p);
+    return p;
+}
+
+// Yahoo's BSE (.BO) daily series is sometimes truncated to a single candle while the
+// NSE (.NS) listing of the same company is complete — fall back to it when that happens.
+// Tickers retired after corporate actions → their current listing, so older
+// portfolio / watchlist entries keep getting real prices.
+const LEGACY_SYMBOLS = { 'TATAMOTORS.BO': 'TMPV.BO', 'TATAMOTORS.NS': 'TMPV.NS' };
+
+async function fetchChartSmart(symbol, range, interval) {
+    symbol = LEGACY_SYMBOLS[symbol] || symbol;
+    const result = await fetchChart(symbol, range, interval);
+    const n = (result.timestamp || []).length;
+    if (n >= 2 || !/\.BO$/.test(symbol)) return result;
+    try {
+        const alt = await fetchChart(symbol.replace(/\.BO$/, '.NS'), range, interval);
+        if ((alt.timestamp || []).length > n) return alt;
+    } catch {
+        /* keep the BSE result */
     }
-    const searchTerm = query.toUpperCase();
-    return INDIAN_STOCKS.filter(stock =>
-        stock.symbol.includes(searchTerm) ||
-        stock.name.toUpperCase().includes(searchTerm)
-    ).slice(0, 10); 
+    return result;
+}
+
+function searchStocks(query) {
+    if (!query || query.length < 1) return [];
+    const q = query.toUpperCase();
+    return INDIAN_STOCKS.filter(
+        (s) => s.symbol.includes(q) || s.name.toUpperCase().includes(q) || s.sector.toUpperCase().includes(q)
+    ).slice(0, 10);
 }
 
 async function getStockPrice(symbol) {
-    const cacheKey = symbol.toUpperCase();
-    const cached = priceCache.get(cacheKey);
-    if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
-        console.log(`Using cached data for ${symbol}`);
-        return cached.data;
-    }
-    try {
-        console.log(`Fetching real-time data for ${symbol} from Yahoo Finance...`);
-        const quote = await yahooFinance.quote(symbol);
-        apiCallCount++;
-        if (!quote) {
-            throw new Error(`No data returned from Yahoo Finance for ${symbol}`);
-        }
-        const priceData = {
-            symbol: symbol.toUpperCase(),
-            price: quote.regularMarketPrice || 0,
-            change: quote.regularMarketChange || 0,
-            changePercent: quote.regularMarketChangePercent || 0,
-            open: quote.regularMarketOpen || 0,
-            high: quote.regularMarketDayHigh || 0,
-            low: quote.regularMarketDayLow || 0,
-            volume: quote.regularMarketVolume || 0,
-            previousClose: quote.regularMarketPreviousClose || 0,
-            lastUpdated: new Date().toISOString()
-        };
-        priceCache.set(cacheKey, {
-            data: priceData,
-            timestamp: Date.now()
-        });
-        return priceData;
-    } catch (error) {
-        console.error(`Error fetching price for ${symbol} from Yahoo Finance:`, error.message);
-        throw new Error(`Failed to fetch price for ${symbol}: ${error.message}`);
-    }
+    const key = String(symbol).toUpperCase();
+    const cached = quoteCache.get(key);
+    if (cached && Date.now() - cached.ts < QUOTE_TTL) return cached.data;
+
+    const result = await fetchChartSmart(key, '1d', '5m');
+    const m = result.meta || {};
+    const q = result.indicators?.quote?.[0] || {};
+    const closes = (q.close || []).filter((v) => v != null);
+    const price = m.regularMarketPrice ?? closes[closes.length - 1] ?? 0;
+    const prev = m.chartPreviousClose ?? m.previousClose ?? price;
+    const change = price - prev;
+    const info = findStock(key);
+
+    const data = {
+        symbol: key,
+        name: info?.name || m.longName || m.shortName || key,
+        sector: info?.sector || 'Other',
+        exchange: info?.exchange || m.exchangeName || 'BSE',
+        price,
+        change,
+        changePercent: prev ? (change / prev) * 100 : 0,
+        open: (q.open || []).find((v) => v != null) ?? prev,
+        high: m.regularMarketDayHigh ?? price,
+        low: m.regularMarketDayLow ?? price,
+        volume: m.regularMarketVolume ?? 0,
+        previousClose: prev,
+        fiftyTwoWeekHigh: m.fiftyTwoWeekHigh ?? null,
+        fiftyTwoWeekLow: m.fiftyTwoWeekLow ?? null,
+        spark: closes.filter((_, i) => i % 3 === 0),
+        lastUpdated: new Date((m.regularMarketTime || Date.now() / 1000) * 1000).toISOString(),
+    };
+    quoteCache.set(key, { ts: Date.now(), data });
+    return data;
 }
 
- 
+const getStockQuote = getStockPrice;
 
+async function getHistory(symbol, rangeKey = '1M') {
+    const cfg = RANGES[rangeKey] || RANGES['1M'];
+    const sym = String(symbol).toUpperCase();
+    const key = `${sym}|${rangeKey}`;
+    const cached = historyCache.get(key);
+    const ttl = rangeKey === '1D' ? QUOTE_TTL : HISTORY_TTL;
+    if (cached && Date.now() - cached.ts < ttl) return cached.data;
 
-async function getStockQuote(symbol) {
-    const priceData = await getStockPrice(symbol);
-    const stockInfo = INDIAN_STOCKS.find(s => s.symbol === symbol.toUpperCase());
-    return {
-        ...priceData,
-        name: stockInfo ? stockInfo.name : symbol,
-        exchange: stockInfo ? stockInfo.exchange : 'BSE',
-        sector: stockInfo ? stockInfo.sector : 'Other'
-    };
+    const result = await fetchChartSmart(sym, cfg.range, cfg.interval);
+    const ts = result.timestamp || [];
+    const q = result.indicators?.quote?.[0] || {};
+    const points = ts
+        .map((t, i) => ({ t: t * 1000, o: q.open?.[i], h: q.high?.[i], l: q.low?.[i], c: q.close?.[i], v: q.volume?.[i] }))
+        .filter((p) => p.c != null);
+    const data = { symbol: sym, range: rangeKey, previousClose: result.meta?.chartPreviousClose ?? null, points };
+    historyCache.set(key, { ts: Date.now(), data });
+    return data;
+}
+
+// Limits concurrency so a big batch doesn't hammer Yahoo.
+async function mapLimit(items, limit, fn) {
+    const out = new Array(items.length);
+    let i = 0;
+    const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+        while (i < items.length) {
+            const idx = i++;
+            try {
+                out[idx] = { status: 'fulfilled', value: await fn(items[idx]) };
+            } catch (e) {
+                out[idx] = { status: 'rejected', reason: e };
+            }
+        }
+    });
+    await Promise.all(workers);
+    return out;
 }
 
 async function updateMultiplePrices(symbols) {
-    const results = await Promise.allSettled(
-        symbols.map(symbol => getStockPrice(symbol))
-    );
-    return results.map((result, index) => ({
-        symbol: symbols[index],
-        success: result.status === 'fulfilled',
-        data: result.status === 'fulfilled' ? result.value : null,
-        error: result.status === 'rejected' ? result.reason.message : null
+    const results = await mapLimit(symbols, 8, (s) => getStockPrice(s));
+    return results.map((r, idx) => ({
+        symbol: symbols[idx],
+        success: r.status === 'fulfilled',
+        data: r.status === 'fulfilled' ? r.value : null,
+        error: r.status === 'rejected' ? r.reason.message : null,
     }));
+}
+
+async function getIndices() {
+    const results = await updateMultiplePrices(INDICES.map((i) => i.symbol));
+    return results
+        .filter((r) => r.success)
+        .map((r) => ({ ...r.data, name: INDICES.find((i) => i.symbol === r.symbol).name }));
 }
 
 module.exports = {
     searchStocks,
     getStockPrice,
     getStockQuote,
+    getHistory,
+    getIndices,
     updateMultiplePrices,
-    INDIAN_STOCKS
+    findStock,
+    RANGES,
+    INDIAN_STOCKS,
 };
-
