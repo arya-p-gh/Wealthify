@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "npm --prefix frontend install",
+  "buildCommand": "npm --prefix frontend run build",
+  "outputDirectory": "frontend/dist",
+  "functions": {
+    "api/market.mjs": { "maxDuration": 60, "includeFiles": "frontend/server/**" }
+  },
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/market?path=:path*" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
+}

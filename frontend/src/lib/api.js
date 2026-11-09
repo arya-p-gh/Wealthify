@@ -1,6 +1,8 @@
 import { isLocalPath, localApi } from './store';
 
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+// The market-data API is served from the same site (/api), so nothing needs configuring.
+// VITE_API_URL is only an optional override for pointing at another server.
+export const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Public market-data API (prices, charts, search). No accounts, no auth headers.
 async function remote(path, { method = 'GET', body, signal } = {}) {
@@ -14,7 +16,7 @@ async function remote(path, { method = 'GET', body, signal } = {}) {
     });
   } catch (e) {
     if (e.name === 'AbortError') throw e;
-    throw new Error("Can't reach the market data server. Is the backend running?");
+    throw new Error("Can't reach the market data service. Check your connection and try again.");
   }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.message || `Request failed (${res.status})`);

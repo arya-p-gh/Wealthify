@@ -4,6 +4,8 @@ Smart wealth and investment portfolio management for Indian markets: track holdi
 
 **This is a demo project with no accounts.** Click "Try the demo" to open a sample portfolio, or start empty and add your own. Holdings, watchlist, goals and profile are saved in the visitor's own browser (localStorage), so every visitor gets a private copy and nothing personal is stored on a server. Market data is live.
 
+It's a single Vite app: the live market data comes from a small `/api` that runs as a Vercel serverless function in production and inside the Vite dev server locally. There is no database, no separate backend and no environment variables to set.
+
 ## Features
 
 - **Live landing page**: real NIFTY 50 intraday chart, all four indices, market breadth and top movers, with no sign-in needed.
@@ -23,29 +25,28 @@ Smart wealth and investment portfolio management for Indian markets: track holdi
 | Layer    | Stack |
 |----------|-------|
 | Frontend | React 19, Vite, React Router 7, Tailwind CSS 3, Framer Motion, Recharts, Lucide icons |
-| Backend  | Node.js + Express: a stateless market-data API (no database, no accounts) |
+| API      | `frontend/server/` — a stateless market-data handler, deployed as a Vercel function (`api/market.js`) |
 | Storage  | Browser localStorage (`wealthify:demo:v1`), handled in `frontend/src/lib/store.js` |
 | Data     | Yahoo Finance chart API (cached 60s; falls back to the NSE listing when BSE data is sparse) |
 
 ## Getting started
 
 ```bash
-# 1. Market data API (http://localhost:5001)
-cd backend
+cd frontend
 npm install
-npm run dev
-
-# 2. Web app (http://localhost:3000)
-cd ../frontend
-npm install
-npm run dev
+npm run dev        # app + market-data API on http://localhost:3000
 ```
 
-To deploy, host the API anywhere that runs Node (`npm start`, optionally set `CLIENT_ORIGIN` for CORS) and the frontend as a static site (`npm run build`, output in `frontend/dist`) with `VITE_API_URL` pointing at the API. No database is needed.
+### Deploy to Vercel
+
+Import the GitHub repo into Vercel and deploy. Nothing else to configure:
+
+- `vercel.json` (at the repo root, and in `frontend/`) sets the install/build commands, the output folder, the `/api` function and the single-page-app fallback, so it works whether the project's Root Directory is the repo root or `frontend`.
+- No environment variables are needed. API responses are cached on Vercel's CDN for 60 seconds.
 
 ## API overview
 
-All routes are public and read-only; the browser only sends symbols and quantities to price them.
+All routes are public; the browser only sends symbols and quantities to price them.
 
 | Method | Route | Purpose |
 |---|---|---|

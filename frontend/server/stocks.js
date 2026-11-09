@@ -1,4 +1,4 @@
-const INDIAN_STOCKS = [
+export const INDIAN_STOCKS = [
     // IT Sector
     { symbol: 'TCS.BO', name: 'Tata Consultancy Services Ltd', exchange: 'BSE', sector: 'IT' },
     { symbol: 'INFY.BO', name: 'Infosys Ltd', exchange: 'BSE', sector: 'IT' },
@@ -123,4 +123,3 @@ const INDIAN_STOCKS = [
     { symbol: 'BOSCHLTD.BO', name: 'Bosch Ltd', exchange: 'BSE', sector: 'Industrial' }
 ];
 
-module.exports = INDIAN_STOCKS;
